@@ -83,7 +83,7 @@ table.tbl{width:100%;border-collapse:collapse;background:var(--card);font-size:1
 .finale .beacon{position:absolute;right:26px;top:22px;font-family:var(--mono);font-size:13px;color:var(--brass);letter-spacing:3px}
 .site-foot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1.5px solid var(--line-strong);margin-top:34px;padding:18px 0 44px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.8px}
 .cheat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.cheat .cc{border:2px solid var(--line-strong);border-radius:12px;background:var(--card);padding:12px 15px;box-shadow:3px 3px 0 rgba(42,52,56,.14);font-size:14.5px;line-height:1.7}
+.cheat .cc{border:2px solid var(--line-strong);border-radius:12px;background:var(--card);padding:12px 15px;box-shadow:3px 3px 0 rgba(42,52,56,.14);color:var(--ink);font-size:14.5px;line-height:1.7}
 .cheat .cc b{color:var(--orange);font-family:var(--mono)}
 @media (max-width:820px){
   h1{font-size:36px}.hero-grid{grid-template-columns:1fr}

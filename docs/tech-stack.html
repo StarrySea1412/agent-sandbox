@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>把危险关进笼子 · 技术栈全景图</title>
+<style>
+@font-face{font-family:"WenKai";src:url("../assets/wenkai-medium.woff2") format("woff2");font-weight:600 900;font-display:swap}
+:root{
+  --bg:#ecebe6;--surface:#f8f7f3;--ink:#2a3438;--ink2:#46555c;--muted:#6d7d84;--faint:#98a6ab;
+  --line:#d8d7ce;--line2:#e5e4db;--steel:#2e6e83;--steel-soft:#e3edf1;--orange:#d98f1f;--orange-soft:#f7ebd5;
+  --green:#3f8f5f;--red:#c2483a;--night:#20262b;--night-text:#d8e3e8;
+  --mono:ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{width:900px;background:var(--bg);color:var(--ink);font-family:"WenKai","Microsoft YaHei",sans-serif;padding:44px 46px 36px;
+  background-image:linear-gradient(rgba(42,52,56,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(42,52,56,.05) 1px,transparent 1px);background-size:44px 44px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:2px solid #b4b3a8;padding-bottom:14px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--steel);margin:0 0 9px}
+h1{margin:0;font-size:32px;line-height:1.2;font-weight:800}h1 em{font-style:normal;color:var(--orange)}
+.head .meta{text-align:right;font-family:var(--mono);font-size:9.5px;line-height:1.95;color:var(--muted);white-space:nowrap}
+.dek{margin:14px 0 18px;font-size:13px;line-height:1.8;color:var(--ink2);max-width:780px}
+.hazard{height:6px;border-radius:3px;margin:16px 0 0;background:repeating-linear-gradient(-45deg,var(--ink) 0 10px,var(--orange) 10px 20px);opacity:.8}
+.sect{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--muted);margin:18px 0 8px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
+.card .ch{padding:9px 13px 7px;border-bottom:1px solid var(--line2);font-weight:800;font-size:13.5px}
+.card .ch small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--steel);margin-bottom:3px;font-weight:400}
+.card .cb{padding:8px 13px 10px;font-size:11px;line-height:1.75;color:var(--ink2)}
+.card .cb b{color:var(--ink)}
+.card.hl .ch{background:var(--orange-soft);border-top:2px solid var(--orange)}
+.bar{margin:20px 0 0;border-radius:8px;background:var(--night);color:var(--night-text);padding:14px 18px;font-family:var(--mono);font-size:11px;line-height:1.9;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.bar b{color:#e8a45f}
+.foot{margin-top:16px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--faint);display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="head">
+  <div><div class="eyebrow">造物手记 VOL.17 · TECH STACK</div>
+  <h1>把危险<em>关进笼子</em> · 技术栈全景图</h1></div>
+  <div class="meta">agent-sandbox · SANDBOX / 执行边界<br/>6 章 · 6 互动 · 零依赖<br/>2026.11 · StarrySea1412</div>
+</div>
+<div class="dek">解剖一台本机工作台的执行边界三件套：一段代码要过六道门——长度、import、内核围栏、时间、环境、产物。文件头第一句是诚实声明：这不是隔离。</div>
+<div class="hazard"></div>
+<div class="sect">01 · <b>解剖标本</b> 471 行三件套</div>
+<div class="cards">
+  <div class="card hl"><div class="ch">python_sandbox<small>217 行</small></div><div class="cb">五上限：<b>8000 字符 / 20s 默认 60s 顶 / 6000 输出 / 2MB 产物 / 512MB 内存</b>；BLOCKED_RE 十二模块</div></div>
+  <div class="card"><div class="ch">windows_job<small>71 行</small></div><div class="cb">Job Object：<b>0x2000|0x0200</b> 关笼即处决 + 全笼 512MB；孩子自动入笼，attach 先于代码</div></div>
+  <div class="card"><div class="ch">workspace_files<small>183 行</small></div><div class="cb">resolve() 越界守卫「路径越出工作区范围」；读 40k 截断、写 60k 拒收、受控写走审批闸门</div></div>
+</div>
+<div class="sect">02 · <b>测试资质</b> 17 个测试钉死上限</div>
+<div class="cards">
+  <div class="card"><div class="ch">边界即规格<small>TESTS</small></div><div class="cb">手写 PNG 验产物回传 / <b>600MB 撞 Job 上限</b> / mock attach 证明「围栏立不起来就不跑码」</div></div>
+  <div class="card"><div class="ch">信息隔离<small>ENV</small></div><div class="cb">白名单 5 键：<b>APP_TEST_SECRET 在笼内是 absent</b>；HOME 重定向进笼；代码走 stdin 不走 argv</div></div>
+  <div class="card"><div class="ch">进程树<small>REAP</small></div><div class="cb"><b>真孙进程收割</b>：笼内 subprocess 生孩子，job.close() 后 WaitForSingleObject 确认全灭</div></div>
+</div>
+<div class="sect">03 · <b>文章与小样</b> 六章六台</div>
+<div class="bar">
+  <span>威胁模型对照 / 分层闸门 / <b>import 判定器（原样正则）</b>/ 进程树围栏 / 环境泄漏对照 / 产物回传流水线</span>
+  <span>深度配方：<b>一段真实测试代码过六道门</b></span>
+</div>
+<div class="foot"><span>插图 6 WebP + hero GIF 15 帧 · 全 GPT 系（crz / 噜皮）</span><span>starrysea1412.github.io/agent-sandbox</span></div>
+</body>
+</html>

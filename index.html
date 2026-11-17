@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>把危险关进笼子 · 造物手记 VOL.17</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="topbar">
+  <div class="brand">🔒 造物手记 VOL.17</div>
+  <div class="edition">SANDBOX / 执行边界 · BOARD 17 · 2026.11</div>
+</div>
+<div class="hazard"></div>
+<div class="hero">
+  <div class="eyebrow">FIELD NOTES · <b>一次关于「边界」的解剖</b></div>
+  <h1>把危险<em>关进笼子</em>
+  <span class="sub">你想让 Agent 跑一段 Python 算个数、画张图——然后它 import 了 socket 开始往外发包。这篇解剖一台本机工作台的执行边界三件套：217 行的沙箱、71 行的 Windows Job Object、183 行的文件门卫。它的文件头写着一句罕见的诚实声明——<b>「这不是文件系统或网络隔离」</b>——为什么把边界写在脸上反而是对的做法？六章拆完，六段互动全部确定性、可重放，每条上限都对到真实常量与真实测试。</span>
+  </h1>
+  <div class="hero-meta">
+    <span class="pill"><b>5 条</b> 硬上限 · 拒绝分层</span>
+    <span class="pill"><b>12 个</b> 模块进不了门</span>
+    <span class="pill"><b>0x2000|0x0200</b> 内核围栏</span>
+    <span class="pill"><b>17 个</b> 测试的标本 · 零依赖</span>
+  </div>
+</div>
+<div class="fig">
+<svg viewBox="0 0 928 470" width="100%" role="img" aria-label="笼子切面：一段代码要过六道门才能进笼、出笼">
+  <defs>
+    <marker id="sar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--steel)"/></marker>
+    <pattern id="hz" width="16" height="16" patternTransform="rotate(-45)" patternUnits="userSpaceOnUse"><rect width="8" height="16" fill="var(--ink)"/><rect x="8" width="8" height="16" fill="var(--orange)"/></pattern>
+  </defs>
+  <rect x="4" y="4" width="920" height="462" rx="18" fill="var(--card)" stroke="var(--line-strong)" stroke-width="2"/>
+  <text x="30" y="38" font-family="Consolas,monospace" font-size="12" letter-spacing="3" fill="var(--faint)">CAGE CROSS-SECTION · 一段代码的六道门</text>
+  <circle cx="898" cy="33" r="6" fill="var(--green)"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" repeatCount="indefinite"/></circle>
+  <rect x="26" y="64" width="180" height="330" rx="12" fill="var(--paper-deep)" stroke="var(--line-strong)"/>
+  <text x="42" y="92" font-family="Consolas,monospace" font-size="12" fill="var(--muted)" letter-spacing="1">模型递来的代码</text>
+  <g font-family="Consolas,monospace" font-size="11.5" fill="var(--ink-soft)">
+    <rect x="42" y="108" width="148" height="58" rx="8" fill="var(--card)" stroke="var(--line-strong)"/>
+    <text x="52" y="128">import struct, zlib</text>
+    <text x="52" y="144">open('plot.png','wb')</text>
+    <text x="52" y="158">print('saved')</text>
+    <text x="42" y="196" fill="var(--faint)">≈ 350 字符 · 10 行</text>
+    <text x="42" y="216" fill="var(--faint)">来自 tests_python_sandbox.py</text>
+    <text x="42" y="236" fill="var(--faint)">test_artifact_png_is_collected</text>
+  </g>
+  <rect x="42" y="300" width="148" height="24" rx="6" fill="none" stroke="var(--red)" stroke-dasharray="4 3"/>
+  <text x="52" y="317" font-family="Consolas,monospace" font-size="11" fill="var(--red)">import socket ✕ 进不了门</text>
+  <rect x="42" y="336" width="148" height="24" rx="6" fill="none" stroke="var(--line-strong)" stroke-dasharray="4 3"/>
+  <text x="52" y="353" font-family="Consolas,monospace" font-size="11" fill="var(--muted)">env 里 40 个变量 ✕ 不随行</text>
+  <g font-family="Consolas,monospace" font-size="12">
+    <g><rect x="248" y="64" width="120" height="70" rx="10" fill="var(--paper-deep)" stroke="var(--orange)" stroke-opacity=".7"/><text x="262" y="90" fill="var(--ink-soft)">① 长度闸</text><text x="262" y="112" fill="var(--orange)" font-weight="700">≤ 8000 字符</text><path d="M206 99 H248" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/></g>
+    <g><rect x="248" y="150" width="120" height="70" rx="10" fill="var(--paper-deep)" stroke="var(--orange)" stroke-opacity=".7"/><text x="262" y="176" fill="var(--ink-soft)">② import 闸</text><text x="262" y="198" fill="var(--orange)" font-weight="700">12 模块拦下</text><path d="M206 185 H248" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/></g>
+    <g><rect x="410" y="64" width="130" height="70" rx="10" fill="var(--paper-deep)" stroke="var(--steel)" stroke-opacity=".7"/><text x="424" y="90" fill="var(--ink-soft)">③ 内核围栏</text><text x="424" y="112" fill="var(--steel)" font-weight="700">Job · 512MB</text><path d="M368 99 H410" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/></g>
+    <g><rect x="410" y="150" width="130" height="70" rx="10" fill="var(--paper-deep)" stroke="var(--steel)" stroke-opacity=".7"/><text x="424" y="176" fill="var(--ink-soft)">④ 时间闸</text><text x="424" y="198" fill="var(--steel)" font-weight="700">20s 默认 · 60s 顶</text><path d="M368 185 H410" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/></g>
+    <g><rect x="582" y="64" width="120" height="70" rx="10" fill="var(--paper-deep)" stroke="var(--steel)" stroke-opacity=".7"/><text x="596" y="90" fill="var(--ink-soft)">⑤ 环境闸</text><text x="596" y="112" fill="var(--steel)" font-weight="700">env 只留 5 键</text><path d="M540 99 H582" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/></g>
+    <g><rect x="582" y="150" width="120" height="70" rx="10" fill="var(--paper-deep)" stroke="var(--steel)" stroke-opacity=".7"/><text x="596" y="176" fill="var(--ink-soft)">⑥ 产物闸</text><text x="596" y="198" fill="var(--steel)" font-weight="700">4 后缀 · ≤2MB</text><path d="M540 185 H582" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/></g>
+  </g>
+  <rect x="742" y="86" width="160" height="118" rx="12" fill="var(--green-soft)" stroke="var(--green)" stroke-opacity=".6"/>
+  <text x="756" y="112" font-family="Consolas,monospace" font-size="12" fill="var(--green)" font-weight="700">笼内 · run-xxxx</text>
+  <g font-family="Consolas,monospace" font-size="11" fill="var(--ink-soft)">
+    <text x="756" y="134">python -I -u</text>
+    <text x="756" y="152">stdin 收码 · 0.1s 步进</text>
+    <text x="756" y="170">stdout 截 6000</text>
+    <text x="756" y="188">exit → rmtree 清场</text>
+  </g>
+  <path d="M702 99 H742" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/>
+  <path d="M742 185 H716" stroke="var(--steel)" stroke-width="2" marker-end="url(#sar)"/>
+  <text x="746" y="212" font-family="Consolas,monospace" font-size="11" fill="var(--muted)">plot.png → base64 → 模型看见</text>
+  <rect x="26" y="356" width="876" height="52" rx="10" fill="url(#hz)" opacity=".92"/>
+  <rect x="26" y="356" width="876" height="52" rx="10" fill="var(--card)" opacity=".94"/>
+  <text x="44" y="378" font-family="Consolas,monospace" font-size="12" fill="var(--red)" font-weight="700">NOT filesystem or network isolation.</text>
+  <text x="44" y="396" font-family="Consolas,monospace" font-size="11.5" fill="var(--muted)">Do not expose this runner to untrusted users or untrusted code. —— 文件头第一句，先承认，再设防</text>
+  <text x="30" y="438" font-family="Consolas,monospace" font-size="11" fill="var(--faint)">六道门分三层：闸前拒（①②）、笼内限（③④⑤）、出口查（⑥）——每道门都对应一个真实常量</text>
+</svg>
+</div>
+<div class="fig-cap">FIG. A · 笼子切面：一段真实测试代码的六道门——虚线框是进不来的东西</div>
+<div class="fig">
+<img src="assets/hero-loop.gif" alt="笼中机器运转、警戒灯闪烁的循环动画" loading="lazy" style="width:100%;border-radius:12px;display:block">
+<div class="fig-cap">FIG. B · 装饰位：笼中机器运转、警戒灯缓闪 · 循环动画（gpt-image-2.5-sunburst · 15 帧）</div>
+</div>
+<div class="note"><b>本片提要：</b>Agent 会跑代码，跑代码就要谈边界。这台标本的做法分三层：闸前拒——超长代码、被禁模块，在进程出生之前就拒掉；笼内限——Windows Job Object 圈住整棵进程树、512MB 内存封顶、60 秒必死；出口查——只有四种图片后缀、不超过 2MB 的产物才准回传。而整套防御的第一句话不是「我很安全」，是「<b>我不是隔离</b>」。全部解剖照着 217 + 71 + 183 行真实源码和 17 个测试逐条核对，六段互动全部确定性、可重放。</div>
+<h2 style="font-size:22px;letter-spacing:2px;margin:40px 0 4px">CONTENTS · 六道门</h2>
+<div class="pack" style="display:block">
+  <p>01 笼子的哲学 —— 先承认边界，再谈设防</p>
+  <p>02 五条硬上限 —— 拒绝发生在进程出生之前</p>
+  <p>03 import 闸门 —— 十二个进不了门的名字</p>
+  <p>04 内核围栏 —— 71 行 ctypes 圈住整棵进程树</p>
+  <p>05 无形之门 —— 环境变量、stdin 与 -I</p>
+  <p>06 产物回传与清场 —— 图怎么回到模型眼前</p>
+  <p>附 —— 起笼前检查单：如果只带走十二句</p>
+</div>
+<div class="meridian">— CHAPTER 01 —</div>
+<div class="chapter" id="ch1">
+<div class="ch-head"><span class="ch-no">01 · CHAPTER</span><h2>笼子的哲学：先承认边界，再谈设防</h2></div>
+<p class="ch-lead">安全工程里最贵的失误，不是防线太薄，是防线撒谎。这台沙箱第一句自述是认输——然后每一行代码都在它承认的边界内把防守做到位。</p>
+<h3><span class="h3n">⚓ 1.1</span>两份声明，同一个立场</h3>
+<p>标本由三个模块组成，总共 <b>471 行</b>：<code>python_sandbox.py</code> 217 行、<code>windows_job.py</code> 71 行、<code>workspace_files.py</code> 183 行。三个文件的 docstring 是同一个立场的三次重申。沙箱runner 文件头（原样）：</p>
+<div class="term">
+<div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">python_sandbox.py · 文件头原样</span></div>
+<pre><span class="c">"""Trusted-code Python runner with time/output limits and Windows job limits.</span>
+<span class="c">The temporary working directory and import checks are not filesystem or network</span>
+<span class="c">isolation. Do not expose this runner to untrusted users or untrusted code."""</span></pre>
+</div>
+<p>翻译过来：<b>这是给「可信代码」的 runner，不是关押「恶意代码」的监狱；临时目录和 import 检查不构成文件系统或网络隔离；别把它暴露给不可信的用户或代码。</b>工具的 META 元数据里又把这句话压成一行随 schema 下发：「Trusted-code runner: timeout, bounded output, and Windows job memory/process-tree limits. <b>Not filesystem or network isolation.</b>」——也就是说，模型每次拿到这个工具的菜单时，都读到同一份边界声明。文件门卫 <code>workspace_files.py</code> 同款：「…not an isolation boundary. Paths must stay inside the user's workspace root.」</p>
+<p><b>经典追问：为什么不干脆做成真隔离，还要把「不隔离」写在脸上？</b>三个理由。①<strong>威胁模型不同</strong>——这台沙箱的假想敌是「可信代码出事故」：死循环、内存爆炸、刷屏输出、误删工作区文件；不是「恶意攻击者蓄意逃逸」。防事故靠上限和围栏就够了，防蓄意攻击要上容器或虚拟机，那是另一档成本。②<strong>功能死刑</strong>——真隔离意味着断网断盘，而标本的核心用途是 matplotlib 画图落盘再回传，隔离了，用途也没了。③<strong>诚实是合同</strong>——把「不防什么」写进 docstring 和 schema，调用方（模型和人）才不会高估它：有人想在上面跑爬虫时，第一句话就把路堵死。<b>声称过大的安全边界，比没有边界更危险——因为用户会基于你的声称做决策。</b></p>
+<div class="fig"><img src="assets/ch1-cage.webp" alt="车间里关着小机器的金属笼" loading="lazy" style="width:100%;border-radius:12px;display:block">
+<div class="fig-cap">FIG. C · 笼、机器、钥匙挂在笼外——钥匙是给看守的，不是给囚徒的（gpt-image-2 生成）</div>
+</div>
+<div class="demo" id="d1">
+  <div class="demo-head">
+    <span class="demo-tag">互动 01</span>
+    <span class="demo-title">威胁模型对照台 · 八种手段，三种待遇</span>
+    <span class="demo-hint">点每一行看判定理由 · 注意第三类是「明说不防」</span>
+  </div>
+  <div class="demo-body">
+    <div id="d1-rows" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="term" style="margin-top:12px">
+      <div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">判定依据 · 对应源码</span></div>
+      <pre id="d1-term"># 点上面任意一行 —— 给出判定与源码依据</pre>
+    </div>
+    <div class="readout">
+      <div class="rd">拦（闸前拒）<b id="d1-block">0</b></div>
+      <div class="rd">限（笼内兜底）<b id="d1-cap">0</b></div>
+      <div class="rd">明说不防（诚实声明）<b id="d1-dis" class="hot">0</b></div>
+    </div>
+  </div>
+  <div class="demo-foot">确定性判定表：每一种手段的判定都对应标本里的一条常量或一句声明，无随机。第三类「明说不防」是本篇的题眼——沙箱的文件头明说不是文件系统隔离，读系统文件这类操作它根本不假装能拦，交给「别给不可信代码用」这句合同。</div>
+</div>
+</div>
+<div class="meridian">— CHAPTER 02 —</div>
+<div class="chapter" id="ch2">
+<div class="ch-head"><span class="ch-no">02 · CHAPTER</span><h2>五条硬上限：拒绝发生在进程出生之前</h2></div>
+<p class="ch-lead">笼子最省钱的抓法，是让危险根本没机会出生。五条上限不是五个参数，是五个层级——有的挡在闸前，有的圈在笼里，有的收在出口。</p>
+<h3><span class="h3n">⚓ 2.1</span>五条上限，三个层级</h3>
+<div class="tbl-wrap"><table class="tbl">
+<tr><th>上限</th><th>值</th><th>层级</th><th>真实测试</th></tr>
+<tr><td class="k">代码长度</td><td>≤ 8,000 字符</td><td>闸前拒（Popen 之前）</td><td><code>"# pad\n" * 3000</code> → exceeds</td></tr>
+<tr><td class="k">超时</td><td>默认 20s · 上限 60s</td><td>笼内限（0.1s 步进盯梢）</td><td><code>time.sleep(30)</code> + timeout=1 → killed</td></tr>
+<tr><td class="k">输出</td><td>stdout/stderr 各截 6,000 字符</td><td>笼内限（reader 线程边收边剪）</td><td><code>print('x' * 2000000)</code> → 恰好 6000</td></tr>
+<tr><td class="k">内存</td><td>Job 合计 512MB</td><td>内核围栏（第四章细拆）</td><td><code>bytearray(600 * 1024 * 1024)</code> → MemoryError</td></tr>
+<tr><td class="k">产物</td><td>4 种图片后缀 · ≤ 2MB</td><td>出口查（base64 回传前）</td><td>手写 PNG 被收，超大的被跳过</td></tr>
+</table></div>
+<p>这张表的关键在「层级」列：<b>闸前拒</b>的检查发生在 <code>subprocess.Popen</code> 之前——超长代码和被禁模块根本轮不到出生，返回错误只要几微秒；<b>笼内限</b>的机制活在整个执行期——主循环每 0.1 秒醒一次看deadline，两条 reader 线程把 stdout/stderr 边收边剪（每块 4096 字节，剪到 6000 的四倍余量封顶，解码后再截 6000——四倍是给多字节中文留的余量）；<b>出口查</b>只发生在进程死后——产物收集器扫工作目录，白名单外的文件连看都不看。</p>
+<p>超时的处理尤其讲礼数：超时不是异常，是结果的一个字段——<code>timed_out: true</code> + 一句人话「Execution timed out after {n}s and was killed.」放在 stderr 里回来，模型能读懂发生了什么。而且主循环每 0.1 秒都会先问一句 <code>should_cancel()</code>——<b>人喊停优先于超时，取消永远比杀进程温柔</b>。</p>
+<p><b>经典追问：为什么代码长度限制是 8,000 字符这么小的数？模型写个正经脚本很容易超。</b>因为这是工具的定位决定的：沙箱的 schema description 写明用途是「do math, data wrangling, or render charts」——算个数、洗个数据、画张图，都是短平快的活。8,000 字符 ≈ 二三百行，够任何一段分析脚本；真要写大程序，那是编辑器和终端的活，不该塞进一个工具调用。上限的另一个作用是<b>限定爆炸半径</b>：一段 8,000 字符的代码再离谱，能在 60 秒内造成的事故也是可估计的——上限不是防高手，是把最坏情况变成可预算的。</p>
+<div class="fig"><img src="assets/ch2-limits.webp" alt="五块限重指示牌" loading="lazy" style="width:100%;border-radius:12px;display:block">
+<div class="fig-cap">FIG. D · 五块牌五条红线：有的拦在进门处，有的圈在磅秤上——上限从来不是一个参数，是一套层级（gpt-image-2.5-sunburst 生成）</div>
+</div>
+<div class="demo" id="d2">
+  <div class="demo-head">
+    <span class="demo-tag">互动 02</span>
+    <span class="demo-title">分层闸门 · 五段代码各撞一条上限</span>
+    <span class="demo-hint">逐个点 · 看每段在哪一层被接住</span>
+  </div>
+  <div class="demo-body">
+    <div class="btn-row">
+      <button class="btn primary" onclick="d2.fire('long')">9,000 字符</button>
+      <button class="btn" onclick="d2.fire('import')">import socket</button>
+      <button class="btn" onclick="d2.fire('timeout')">sleep(30) · timeout=1</button>
+      <button class="btn" onclick="d2.fire('output')">print 两百万个 x</button>
+      <button class="btn" onclick="d2.fire('memory')">bytearray 600MB</button>
+      <button class="btn" onclick="d2.fire('ok')">正常算个数</button>
+      <button class="btn ghost" onclick="d2.reset()">清空</button>
+    </div>
+    <div class="term" style="margin-top:12px">
+      <div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">handle(args) · 逐层判定实录</span></div>
+      <pre id="d2-term"># 点一段代码 —— 看它在哪一层停住</pre>
+    </div>
+    <div class="readout">
+      <div class="rd">停止层 <b id="d2-layer">—</b></div>
+      <div class="rd">进程出生了 <b id="d2-born">—</b></div>
+      <div class="rd">耗时 <b id="d2-ms">—</b></div>
+    </div>
+  </div>
+  <div class="demo-foot">确定性模拟：判定顺序照抄 handle()（长度 → import → clamp → Popen → 0.1s 步进 → 出口收集）。注意两件事：① 闸前拒的两段根本没创建进程，耗时是微秒级；② 「正常算个数」打印的是 2**10 = 1024，与 test_registry_execute_roundtrip 的断言同款。</div>
+</div>
+</div>
+<div class="meridian">— CHAPTER 03 —</div>
+<div class="chapter" id="ch3">
+<div class="ch-head"><span class="ch-no">03 · CHAPTER</span><h2>import 闸门：十二个进不了门的名字</h2></div>
+<p class="ch-lead">在进程出生之前，代码还要过第二道闸：一份 12 个名字的黑名单，一条 30 个字符的正则。这是整个沙箱里最「土」的部件，也是最值得细看的部件。</p>
+<h3><span class="h3n">⚓ 3.1</span>黑名单与它的定界符</h3>
+<p>被禁的 12 个模块（<code>BLOCKED_MODULES</code> 原样）分三伙：<strong>网络</strong>——socket、urllib、requests、http、ftplib、telnetlib；<strong>进程与系统</strong>——subprocess、multiprocessing、ctypes、signal、shutil；<strong>异步</strong>——asyncio（asyncio 能用纯 Python 协程绕出同步死循环的监控，还能拼装网络客户端）。拦它们的正则只有一行（原样）：</p>
+<div class="term">
+<div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">BLOCKED_RE · 原样</span></div>
+<pre>r<span class="s">"(?:^|[;\s(])(?:import|from)\s+("</span> + <span class="s">"|"</span>.join(BLOCKED_MODULES) + r<span class="s">")(?:[\s.,;(]|$)"</span>
+<span class="c"># 两端的定界符是精髓：</span>
+<span class="c">#   前缀 (?:^|[;\s(]) —— import 前只能是行首 / 分号 / 空白 / 左括号</span>
+<span class="c">#   后缀 (?:[\s.,;(]|$) —— 模块名后必须是空白 / 点 / 逗号 / 分号 / 左括号 / 行尾</span></pre>
+</div>
+<p>后缀定界符挡住的是「伪前缀」：<code>import socketing</code> 里 import 的模块叫 socketing，不在黑名单里，<b>不该拦</b>——正则因为有 <code>[\s.,;(]|$</code> 这个尾巴，不会把 socketing 误判成 socket。前缀定界符挡住的是「伪语句」：<code>myimport socket</code> 里的 import 是个更长的名字的一部分。而注释里的 import 会被拦——<code># import socket</code> 里 import 前面是空格，正则照样命中。<b>这是一次明码标价的宁可错杀</b>：被注释掉的 import 也过不了闸。误拦一段注释的代价是模型改一行代码重交，漏放一个真 socket 的代价是笼子破洞——这笔账好算。</p>
+<p><b>经典追问：import 黑名单一眼就能绕（exec、__import__、字符串拼接），为什么还敢用它当闸门？</b>因为这道闸的职责被故意限定成了「<b>过滤网</b>」，不是「保险箱」。三个证据：① docstring 说的清楚——import checks are not isolation；② 绕过它需要故意——<code>__import__('socket')</code> 是蓄意攻击行为，而本沙箱的威胁模型（第一章）明确不接这个活，「Do not expose this runner to untrusted code」；③ 过滤网拦的是<strong>顺带的危险</strong>：模型想「帮用户下个文件」顺手 import urllib，这种事故在闸前就死了。真正的底裤是后两层：就算绕过了 import 闸，进程还困在 Job 里、60 秒必死、内存封顶——<b>每层防线的存在不是为了单独挡住所有攻击，是为了把「防线被穿透」变成「还有下一层」</b>。</p>
+<div class="fig"><img src="assets/ch3-gate.webp" alt="车间安检闸门挡下零件" loading="lazy" style="width:100%;border-radius:12px;display:block">
+<div class="fig-cap">FIG. E · 闸门亮黄灯：传送带上的零件过闸，筐里是放行的——闸门是过滤网，不是保险箱（gpt-image-2 生成）</div>
+</div>
+<div class="demo" id="d3">
+  <div class="demo-head">
+    <span class="demo-tag">互动 03</span>
+    <span class="demo-title">import 判定器 · 原样正则，六个病例</span>
+    <span class="demo-hint">逐个点 · 注意病例 2 和 5</span>
+  </div>
+  <div class="demo-body">
+    <div id="d3-cases" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+    <div class="term" style="margin-top:12px">
+      <div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">BLOCKED_RE.search(code) · 逐条判定</span></div>
+      <pre id="d3-term"># 点病例 —— 正则判定与源码同款（JS 移植，模式串逐字一致）</pre>
+    </div>
+    <div class="readout">
+      <div class="rd">已判 <b id="d3-n">0 / 6</b></div>
+      <div class="rd">拦下 <b id="d3-block">0</b></div>
+      <div class="rd">错杀（注释）<b id="d3-over">0</b></div>
+    </div>
+  </div>
+  <div class="demo-foot">确定性模拟：BLOCKED_MODULES 与定界符全部照抄源码。病例 2（socketing）展示后缀定界符防误伤；病例 5（注释里的 import）展示宁可错杀——误拦注释只花一行重试，漏放真 socket 就是笼子破洞。</div>
+</div>
+</div>
+<div class="meridian">— CHAPTER 04 —</div>
+<div class="chapter" id="ch4">
+<div class="ch-head"><span class="ch-no">04 · CHAPTER</span><h2>内核围栏：71 行 ctypes 圈住整棵进程树</h2></div>
+<p class="ch-lead">前两道闸挡的是「代码文本」，这一章挡的是「活着的进程」。Windows Job Object 是内核级的会计制度：进程生几个孩子都算你的账，Closing 即全家处决。</p>
+<h3><span class="h3n">⚓ 4.1</span>一个句柄，两根旗标</h3>
+<p>整个围栏只有 71 行。核心动作是四次内核调用：<code>CreateJobObjectW</code> 建笼 → <code>SetInformationJobObject</code> 立规矩 → <code>AssignProcessToJobObject</code> 把进程塞进笼 → <code>TerminateJobObject</code> 全家处决。立规矩那一步设了两个旗标（源码原样）：</p>
+<div class="term">
+<div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">windows_job.py L54-57 · 旗标与账本</span></div>
+<pre>limits = ExtendedLimits()
+<span class="c"># Kill on close + aggregate job memory. Children inherit job membership.</span>
+limits.BasicLimitInformation.LimitFlags = <span class="p">0x2000 | 0x0200</span>
+limits.JobMemoryLimit = memory_bytes   <span class="c"># 512MB，全笼合计</span></pre>
+</div>
+<p><code>0x2000</code> 是 <strong>JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE</strong>：笼子的句柄一关，笼里所有进程（无论谁生的）立刻终止——这就是为什么沙箱的 finally 里无条件 <code>job.close()</code>，超时、异常、取消，任何出口都通向全家处决。<code>0x0200</code> 是 <strong>JOB_OBJECT_LIMIT_JOB_MEMORY</strong>：512MB 不是单进程的限额，是<strong>全笼合计</strong>的提交内存——主进程吃 100MB、两个孩子各吃 250MB，第四次分配就会收到 MemoryError。注释里还有半句关键承诺：<b>Children inherit job membership</b>——孩子生下来就在笼里，这是「进程树围栏」四个字的内核依据。</p>
+<p>时序上还有一个容易忽略的讲究：Job 在 <code>Popen</code> <strong>之前</strong>创建，attach 在代码送达<strong>之前</strong>完成。源码里有行注释专门点破：「User code is delivered only after the process has joined the job.」——<b>不存在「代码先跑了几毫秒、围栏后到」的窗口期</b>。测试代码甚至验证了反面：<code>test_job_setup_failure_does_not_run_code</code> 把 attach mock 成抛错，断言标记文件从未被创建——围栏立不起来，宁可空手而归，绝不让代码裸跑。</p>
+<p><b>经典追问：process.kill() 一行就能杀进程，为什么非要引内核的 Job Object？</b>因为 kill 只杀一个进程，而代码会生孩子。import 闸拦得住「顺手的」subprocess，拦不住所有造进程的手段——测试正是这么验证的：绕过 handle() 的 import 检查，直接把一段 <code>import subprocess</code> 的代码喂给笼内进程，让它真的生出一个 sleep(30) 的孩子。Windows 上孤儿进程不随父亲死亡，会在后台活到天荒地老。Job Object 的会计是内核记账：AssignProcessToJobObject 之后，无论进程怎么生孩子，孩子自动继承笼籍（测试 <code>test_closing_job_terminates_descendant</code> 真的让笼里进程 subprocess 生了个 sleep(30) 的孩子，然后 job.close()，再用 OpenProcess + WaitForSingleObject 确认孩子也死了）。POSIX 那侧的对应物是 <code>start_new_session=True</code> + <code>os.killpg</code> 杀整组——但 killpg 只管一组，Job 是持续账本。<b>一次性击杀和持续监管是两种能力：前者是行刑，后者是坐牢。</b></p>
+<div class="fig"><img src="assets/ch4-fence.webp" alt="电磁围栏罩住进程树" loading="lazy" style="width:100%;border-radius:12px;display:block">
+<div class="fig-cap">FIG. F · 围栏罩住整棵树：谁生的孩子都在账上——一次性击杀和持续监管是两种能力（gpt-image-2.5-sunburst 生成）</div>
+</div>
+<div class="demo" id="d4">
+  <div class="demo-head">
+    <span class="demo-tag">互动 04</span>
+    <span class="demo-title">进程树围栏 · kill 一个和坐牢一窝</span>
+    <span class="demo-hint">两种收割方式对照 · 看孤儿怎么漏网</span>
+  </div>
+  <div class="demo-body">
+    <div class="btn-row">
+      <button class="btn primary" onclick="d4.spawn()">笼内进程 + 生两个孩子</button>
+      <button class="btn" onclick="d4.killRoot()">只 kill 根进程</button>
+      <button class="btn" onclick="d4.closeJob()">job.close()（内核收割）</button>
+      <button class="btn ghost" onclick="d4.reset()">重来</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:12px" id="d4-grid">
+      <div class="term" style="margin:0">
+        <div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">进程树 · 笼籍状态</span></div>
+        <pre id="d4-tree"># 先点「笼内进程 + 生两个孩子」</pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="rd">根进程 <b id="d4-root">∅</b></div>
+        <div class="rd">子进程存活 <b id="d4-kids">0 / 0</b></div>
+        <div class="rd">笼内存合计 <b id="d4-mem">0 MB / 512 MB</b></div>
+        <div class="rd">孤儿逃逸 <b id="d4-orphan" class="hot">0 个</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="demo-foot">确定性模拟：树上节点按 0.5s 步进生灭（每次点击最多再生一个孙辈）。「只 kill 根」后孩子存活、累计为孤儿——这就是 test_closing_job_terminates_descendant 要堵的洞；「job.close()」按 KILL_ON_JOB_CLOSE 语义收割全家，包括已逃出视野的孤儿（Children inherit job membership）。</div>
+</div>
+</div>
+<div class="meridian">— CHAPTER 05 —</div>
+<div class="chapter" id="ch5">
+<div class="ch-head"><span class="ch-no">05 · CHAPTER</span><h2>无形之门：环境变量、stdin 与 -I</h2></div>
+<p class="ch-lead">笼子最容易被忽视的漏洞不在代码里，在代码周围：环境变量、启动参数、当前目录——这些「不是代码的东西」往往比代码更机密。</p>
+<h3><span class="h3n">⚓ 5.1</span>五把钥匙：环境变量白名单</h3>
+<p>沙箱进程的环境变量不是继承来的，是<strong>逐个挑出来的</strong>（源码原样）：</p>
+<div class="term">
+<div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">python_sandbox.py L99-101 · 白名单与重定向</span></div>
+<pre>env = {key: value <span class="k">for</span> key, value <span class="k">in</span> os.environ.items()
+       <span class="k">if</span> key.upper() <span class="k">in</span> {<span class="s">"SYSTEMROOT"</span>, <span class="s">"WINDIR"</span>, <span class="s">"PATH"</span>, <span class="s">"TEMP"</span>, <span class="s">"TMP"</span>}}
+env.update({<span class="s">"MPLCONFIGDIR"</span>: workdir, <span class="s">"HOME"</span>: workdir, <span class="s">"USERPROFILE"</span>: workdir})</pre>
+</div>
+<p>一个 Web 工作台的进程环境里躺着什么？数据库连接串、各种 API key、部署令牌——<b>黑名单思路在这里必败</b>：你永远列不全「危险的名字」，而白名单只有 5 个键，谁也塞不进来。测试直接把这件事钉死：<code>test_parent_secrets_are_not_inherited</code> 往父进程环境塞一个 <code>APP_TEST_SECRET</code>，断言笼内 <code>os.getenv</code> 拿到的是 <code>'absent'</code>。白名单之后的三行 <code>update</code> 是温柔的补偿：<code>HOME</code>、<code>USERPROFILE</code>、<code>MPLCONFIGDIR</code> 全部重定向进笼内临时目录——matplotlib 要写配置、库要找 home，都让它们写进<b>即将被 rmtree 的地方</b>。</p>
+<h3><span class="h3n">⚓ 5.2</span>代码走 stdin，不走命令行</h3>
+<p>启动命令只有一句 bootstrap（原样）：<code>python -I -u -c "import sys; exec(compile(sys.stdin.buffer.read().decode('utf-8'), '&lt;tool&gt;', 'exec'))"</code>。两个细节值得停。其一，<b>用户代码不在命令行里</b>——它从 stdin 管道灌进去。命令行是公开的：任务管理器、进程列表、崩溃报告全都记录完整 argv，代码若走 argv，任何能看到进程列表的人（和任何崩溃日志）都看得到全文；而且 Windows 命令行长度上限 32,767 字符，8,000 字符的代码配上引号转义随时炸。stdin 只有管道两端知道。其二，<b>时序</b>：stdin 的写入发生在 <code>job.attach()</code> 之后——代码永远是在围栏立好之后才被递进去的，第一章说的「不隔离」，在这条时间线上被打了一次补丁。</p>
+<p>还有那个不起眼的 <code>-I</code>：CPython 的隔离模式，忽略 <code>PYTHONPATH</code>、不加载用户 site-packages、不执行环境里的启动钩子。环境变量已经剥干净了，<code>-I</code> 再把解释器自身的「环境依赖」也剥一层——<b>两道门对着同一个方向，各自独立，谁失守另一个还在</b>。</p>
+<p><b>经典追问：环境变量白名单为什么留 PATH 这种危险项，不留 PYTHONPATH？</b>留 PATH 是因为生存需要：Windows 上 <code>SYSTEMROOT/WINDIR</code> 让 Python 能加载系统 DLL，<code>PATH</code> 让 matplotlib 的原生依赖找得到彼此——不留这些，进程第一步就爬不起来。不留 PYTHONPATH 是因为它是<b>纯增项</b>：PATH 决定「去哪找系统」，PYTHONPATH 决定「额外塞进 import 搜索路径的私货」——父进程的 PYTHONPATH 若跟着进来，笼内代码就能 import 到父环境里任何目录下的模块，白名单就白做了。<b>白名单的每一条留项，都要能回答「它是不是活命必需」；回答不了的，一律不带。</b></p>
+<div class="fig"><img src="assets/ch5-door.webp" alt="金属门投递口与五把钥匙" loading="lazy" style="width:100%;border-radius:12px;display:block">
+<div class="fig-cap">FIG. G · 投递口送码，墙上五把钥匙——环境变量逐个挑出来，代码从管道递进去（gpt-image-2 生成）</div>
+</div>
+<div class="demo" id="d5">
+  <div class="demo-head">
+    <span class="demo-tag">互动 05</span>
+    <span class="demo-title">环境泄漏对照台 · 白名单开关前后</span>
+    <span class="demo-hint">切「白名单」· 看哪些名字能随行进笼</span>
+  </div>
+  <div class="demo-body">
+    <div class="btn-row">
+      <label style="font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:7px">
+        <input type="checkbox" id="d5-wl" checked onchange="d5.paint()"> 白名单 ON（源码同款 5 键）
+      </label>
+      <button class="btn ghost" onclick="d5.reset()">复位</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px" id="d5-grid">
+      <div style="border:1.5px solid var(--line-strong);border-radius:12px;overflow:hidden">
+        <div style="padding:8px 14px;background:var(--paper-deep);font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--muted)">父进程 os.environ（示例 12 键）</div>
+        <div id="d5-parent" style="padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+      <div style="border:1.5px solid var(--line-strong);border-radius:12px;overflow:hidden">
+        <div style="padding:8px 14px;background:var(--paper-deep);font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--muted)">笼内 python 看到的环境</div>
+        <div id="d5-cage" style="padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;min-height:118px"></div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="rd">父环境键 <b id="d5-pn">12</b></div>
+      <div class="rd">随行键 <b id="d5-cn">8</b></div>
+      <div class="rd">机密泄漏 <b id="d5-leak" class="okc">0</b></div>
+      <div class="rd">HOME 指向 <b id="d5-home">—</b></div>
+    </div>
+  </div>
+  <div class="demo-foot">确定性模拟：父环境 12 键为典型 Web 工作台示例（含 5 个机密），白名单键名照抄源码；随行的 HOME/USERPROFILE/MPLCONFIGDIR 三键被重定向进笼内临时目录。值得看的点：关掉白名单，PYTHONPATH 会把父环境的模块搜索路径带进笼——这就是为什么它进不了白名单。</div>
+</div>
+</div>
+<div class="meridian">— CHAPTER 06 —</div>
+<div class="chapter" id="ch6">
+<div class="ch-head"><span class="ch-no">06 · CHAPTER</span><h2>产物回传与清场：图怎么回到模型眼前</h2></div>
+<p class="ch-lead">代码在笼里画了张图，模型看不见——图在文件系统里，模型只有文本。产物闸是笼子唯一的一条「出口通道」，它的宽度被精确控制。</p>
+<h3><span class="h3n">⚓ 6.1</span>四后缀、两兆、一份 base64</h3>
+<p>进程退出后，收集器扫一遍笼内临时目录（<code>ARTIFACT_SUFFIXES</code> 原样：<code>{".png", ".jpg", ".jpeg", ".svg"}</code>）：后缀不在名单里的不看，超过 2MB 的跳过，入选的读成字节、base64 编码，塞进返回值的 <code>artifacts</code> 数组，附上 media_type。schema 的 description 早把这条通路告诉了模型：「Charts: matplotlib with Agg backend, save as .png in the working directory」——<b>模型点单时就知道图要存成 .png 才回得来</b>。测试把整条链路验证了一遍：<code>test_artifact_png_is_collected_as_base64</code> 里那段代码连 matplotlib 都没用，直接用 struct + zlib <strong>手写了一个 1×1 像素的 PNG 二进制</strong>，然后断言 base64 解回第一个字节是 <code>\x89PNG</code>——产物内容没在编码里损坏。</p>
+<p>回传的另一半是 stdout 的呈现。标本的工具循环里有句很直白的注释（<code>tool_loop.py</code> 原样）：「<b>python_sandbox：预览直接给 stdout，别甩一坨 JSON</b>」——沙箱的返回结构里有 stdout/stderr/returncode/duration_ms/timed_out 五个字段，给模型看的时候不用 JSON 包装，直接给文本。一个新注册的工具名 <code>python_sandbox</code> 只在受控模式绑定下启用（<code>registry.py</code>：(binding 且 name in ("python_sandbox", "workspace_files"))——<b>笼子本身就是受控模式的门禁装备，不受控的会话连笼子都摸不到</b>。</p>
+<h3><span class="h3n">⚓ 6.2</span>finally：任何出口都通向清场</h3>
+<p>handle 的最后一段是 finally 块，四件事没有一个可跳过：<code>job.close()</code>（全家处决）、join 两条 reader 线程（5 秒预算）、关闭三根管道、<code>shutil.rmtree(workdir)</code> 抹掉整个临时目录。超时、异常、取消、正常退出——四条路径全部汇进这里。<b>笼子用完即拆，临时目录不留尸。</b>与之一致的是测试目录的命名纪律：所有笼子都住在 <code>%TEMP%\ai-skill-sandbox\run-xxxx</code> 下——一段前缀让全世界的笼子可辨识、可批量清理。</p>
+<p><b>经典追问：产物闸为什么只放行图片，不放行 .csv、.json、.log？</b>因为出口通道的宽度由「模型的感知方式」决定，不是由文件的类型决定。图片是唯一必须走 base64 塞进对话模型才能「看见」的产物——数据表格模型可以让你直接用 stdout 打印前几十行（文本通道天然在），大文件可以分块打印摘要。<b>凡是能用 stdout 走的，都该走 stdout</b>——那条通道有 6,000 字符上限兜底；而 artifacts 是无尺寸语义的 raw 通道，4 后缀 + 2MB 就是把这条「旁路」压到最窄。出口越窄，笼子越可信。</p>
+<div class="fig"><img src="assets/ch6-artifact.webp" alt="托盘上的画被扫描送出" loading="lazy" style="width:100%;border-radius:12px;display:block">
+<div class="fig-cap">FIG. H · 出笼的唯一通道：托盘上的画被扫成光束送进窗口——宽度按模型的感知方式设计（gpt-image-2 生成）</div>
+</div>
+<div class="demo" id="d6">
+  <div class="demo-head">
+    <span class="demo-tag">互动 06</span>
+    <span class="demo-title">产物回传流水线 · 一张 PNG 的出笼记</span>
+    <span class="demo-hint">先跑合法代码，再喂两件「出不了笼」的东西</span>
+  </div>
+  <div class="demo-body">
+    <div class="btn-row">
+      <button class="btn primary" onclick="d6.run()">跑手写 PNG 代码</button>
+      <button class="btn" onclick="d6.big()">塞一个 3MB 的大图</button>
+      <button class="btn" onclick="d6.csv()">塞一个 data.csv</button>
+      <button class="btn ghost" onclick="d6.reset()">清场重来</button>
+    </div>
+    <div class="term" style="margin-top:12px">
+      <div class="term-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="tt">collect_artifacts → 返回值 · 逐条实录</span></div>
+      <pre id="d6-term"># 跑 test_artifact_png_is_collected_as_base64 同款代码（struct+zlib 手写 1×1 PNG）</pre>
+    </div>
+    <div class="readout">
+      <div class="rd">回传产物 <b id="d6-n">0</b></div>
+      <div class="rd">被跳过 <b id="d6-skip">0</b></div>
+      <div class="rd">base64 后 <b id="d6-b64">—</b></div>
+      <div class="rd">魔数完好 <b id="d6-magic">—</b></div>
+    </div>
+  </div>
+  <div class="demo-foot">确定性模拟：合法路径的 base64 长度按 1×1 PNG 真实字节数推算，魔数 \x89PNG 断言与测试同款；3MB 大图命中 MAX_ARTIFACT_BYTES 被静默跳过；data.csv 不在 ARTIFACT_SUFFIXES 白名单，收集器看都不看。笼内临时目录在 finally 里 rmtree——「清场重来」按钮的名字就是这么来的。</div>
+</div>
+</div>
+<div class="note"><b>同一家门卫公司的另一名员工</b>：笼子管的是「跑代码」，<code>workspace_files.py</code>（183 行）管的是「摸文件」——同样的先承认（docstring：not an isolation boundary）、同样的闸前拒。路径解析只有三行（原样）：<code>root.resolve()</code> → <code>(root / relative).resolve()</code> → <b>「candidate != root and root not in candidate.parents」即抛「路径越出工作区范围。」</b>——<code>../../</code> 攻击在 resolve 摊平之后当场现形。配套限额同款分层：读 40,000 字符截断、写 60,000 字符拒收、列表 200 条且滤掉 <code>.git/node_modules/__pycache__</code>。受控模式下写操作还要再过一册讲过的审批闸门（120 秒支票），批准才落 <code>applied</code>、随时可 409 回滚。</div>
+<div class="finale">
+<div class="beacon">CHECKLIST · PRE-FLIGHT</div>
+<h2>附 · 起笼前检查单：如果只带走十二句</h2>
+<p>贴在手边的那一页。每句都是前面六章的浓缩，展开版见各章。</p>
+<div class="cheat">
+  <div class="cc"><b>①</b> 笼子的第一句话是认输——「不是文件系统或网络隔离」写进 docstring 和 schema。声称过大的边界比没有边界更危险。</div>
+  <div class="cc"><b>②</b> 上限分三层——闸前拒（8000 字符、12 模块，进程出生之前）、笼内限（60s、512MB、6000 字符）、出口查（4 后缀、2MB）。</div>
+  <div class="cc"><b>③</b> 定界符防误伤——<code style="font-size:.85em">import socketing</code> 不是 socket；注释里的 import 会被拦，误拦一行重试，漏放一个就是破洞。</div>
+  <div class="cc"><b>④</b> import 闸是过滤网不是保险箱——拦的是顺手的危险；蓄意攻击归威胁模型管，别让一道正则冒充监狱。</div>
+  <div class="cc"><b>⑤</b> Job Object 两个旗标——KILL_ON_JOB_CLOSE 关笼即全家处决，JOB_MEMORY 全笼合计 512MB；孩子自动继承笼籍。</div>
+  <div class="cc"><b>⑥</b> attach 先于代码送达——不存在「先跑几毫秒、围栏后到」的窗口期；围栏立不起来就空手而归，绝不让代码裸跑。</div>
+  <div class="cc"><b>⑦</b> 一次性击杀和持续监管是两种能力——process.kill 是行刑，Job Object 是坐牢；防的是孩子和孙子。</div>
+  <div class="cc"><b>⑧</b> 环境变量用白名单不用黑名单——5 把活命钥匙，API key 一个也带不进笼；测试里 APP_TEST_SECRET 在笼内是 absent。</div>
+  <div class="cc"><b>⑨</b> HOME 重定向进笼——库想写配置文件，让它们写进即将被 rmtree 的地方。</div>
+  <div class="cc"><b>⑩</b> 代码走 stdin 不走 argv——命令行是公开的（进程列表/崩溃日志全记录），管道只有两端知道，且必在入笼之后才递码。</div>
+  <div class="cc"><b>⑪</b> 产物闸只放 4 种图片、≤2MB——能用 stdout 走的都该走 stdout；出口越窄，笼子越可信。</div>
+  <div class="cc"><b>⑫</b> finally 无路可跳——job.close()、join reader、关管道、rmtree，四条退出路径汇进同一个清场块；笼子用完即拆。</div>
+</div>
+</div>
+<h2 style="font-size:24px;margin:34px 0 6px">收尾：承认、上闸、围栏、窄门</h2>
+<p>笼子的全部心思可以压成四件实物：<b>一纸声明</b>（不隔离，写在你读得到的地方）、<b>两道闸</b>（长度和 import，进程出生之前落锤）、<b>一圈围栏</b>（Job Object，内核记账、孩子连坐）、<b>一条窄门</b>（产物回传，四种图片两兆为限）。写作当晚把标本的 17 个测试从头跑了一遍，最喜欢的还是那个手写 PNG 的：一段不用任何库的 struct+zlib 代码在笼里画出一张 1×1 的图，base64 出笼，解回第一个字节还是 <code>\x89PNG</code>——<b>最窄的门，运出来的东西完好无损</b>，这就是一台沙箱能给出的最体面的成绩单。</p>
+<div class="site-foot">
+<span>造物手记 VOL.17 · 把危险关进笼子</span>
+<span>SANDBOX / 2026.11 / 六章 · 六段互动 · 零依赖</span>
+<span>交互确定性模拟 · 标本 hermes-agent-workbench · StarrySea1412</span>
+</div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>
